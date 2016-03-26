@@ -37,13 +37,6 @@ def make_readable(logname, savename):
                 "between the next fire:main:null <label>, ack:bother:null, " + 
                 "fire:bother:null, and next set:main:#... prints out which is" +
                 "used."
-        def format_entry(entry, endstamp):
-            "given an entry and a concluding timestamp, return a human readable string " +
-                "containing the StartTime, SetLength, Duration, and Label."
-        def save_data(filename, datastring, overwrite=None):
-            "given a filename and a datastring, write the data to the file. " +
-                "if file already exists, ask the user whether to abort, " +
-                "overwrite, or append."
 
 """
 def get_input(prompt, verification_fn=lambda x: True, return_fn=lambda x: x):
@@ -57,6 +50,25 @@ def get_input(prompt, verification_fn=lambda x: True, return_fn=lambda x: x):
             return None
     return return_fn(user_reply)
 
+from os.path import isfile
+
+# stub
+def save_data(filename, datastring, overwrite=None):
+    """given a filename and a datastring, write the data to the file.
+        if file already exists, ask the user whether to abort,  overwrite, or append."""
+    if isfile(filename):
+        get_input("%s exists already.\n" % filename +
+                "  Would you like to Overwrite, Append, or Quit? [O/a/q]",
+                lambda x: x.lower() in ("overwrite","o","append","a","quit","q",""),
+                lambda x: "w" if x.lower() in ("overwrite","o","") else "a" if x.lower() in ("append","a") else None)
+
+    print "Warning: Data not saved."
+
+# stub
+def format_entry(entry, endstamp):
+    """given an entry and a concluding timestamp, return a human readable string
+       containing the StartTime, Duration, Label, and Estimate Accuracy."""
+    return "%s: %s %d" % (datetime.datetime.now().ctime(), "Stub Entry Label",10)
 
 
 """
@@ -78,7 +90,18 @@ def check_boolean(string):
     else:
         raise ValueError("%s not boolean" % string)
 
-def test():
+def test_save_data():
+#TODO: check/delete prev. test file, set up test file, tear down test file
+    save_data('test.log',"test_string")
+    print "... saving data passed!"
+
+def test_format_entry():
+# 1458509931396 fire:main:null Checking Out Logcat
+    string = format_entry(["1458509931396","20","Testing Format Entries"], "1458513019429")
+    assert len(string) > 0
+    print "... entry formatting passed!"
+
+def test_get_input():
     #TODO: make get_input noquittable
     user_input = get_input("type anything")
     print "... pass!"
@@ -92,7 +115,10 @@ def test():
     assert user_input in (True, False, None)
     print "... pass!"
 
-
+def test():
+    #TODO: put back test_get_input()
+    test_save_data()
+    test_format_entry()
 #----------------------------------------------
 #                    RUN
 #----------------------------------------------
