@@ -19,9 +19,6 @@ def make_readable(logname, savename):
 
     with open(filename, 'w') as logfile:
         # wishlist
-        def parse_entry(logfile):
-            "given a logfile, return each entry as a tuple. Ask the user to " +
-                "correct any misformed entries manually (or quit) along the way."
         def chunk_lines(logentries):
             "given a logfile, return chunks of set:main:# to set:main#. inclusive."
         def test_chunk(chunk):
@@ -65,6 +62,29 @@ def save_data(filename, datastring, overwrite=None):
     print "Warning: Data not saved."
 
 # stub
+def parse_line(line):
+    """given a line, returns a valid entry tuple or raises a ValueError"""
+    return ("1458510880821","set:main","20","Testing Parse Entries")
+    entry = re.findall("(\d+) (\w+:\w+):(\w+) (.*?) *")
+    if len(entry) != 1:
+        raise ValueError("line \"%s\" invalid")
+
+# stub
+def parse_file(logfile):
+    """given a logfile, return each entry as a tuple. Ask the user to
+       correct any misformed entries manually (or quit) along the way."""
+    line = logfile.readline()
+    return [("1458510880821","set:main","20","Testing Parse Entries"),
+            ("1458512089703","ack:main","null","Testing Parse Entries")]
+    try:
+        entry = parse_line(line)
+    except ValueError:
+        #TODO: finish
+        get_input(ValueError.message())
+
+    #entry = re.findall("(\d+) (\w+:\w+):(\w+) (.*?) *", line)
+
+# stub
 def format_entry(entry, endstamp):
     """given an entry and a concluding timestamp, return a human readable string
        containing the StartTime, Duration, Label, and Estimate Accuracy."""
@@ -92,14 +112,47 @@ def check_boolean(string):
 
 def test_save_data():
 #TODO: check/delete prev. test file, set up test file, tear down test file
-    save_data('test.log',"test_string")
+    save_data('test_save.log',"test_string")
     print "... saving data passed!"
 
 def test_format_entry():
 # 1458509931396 fire:main:null Checking Out Logcat
     string = format_entry(["1458509931396","20","Testing Format Entries"], "1458513019429")
     assert len(string) > 0
-    print "... entry formatting passed!"
+    print "... formatting entries passed!"
+
+def validate_entry(entry):
+    assert len(entry) == 4
+    assert int(entry[0]) > 0
+    try:
+        int(entry[2])
+    except ValueError:
+        assert entry[2] == "null"
+
+def test_parse_line():
+# 1458509931396 fire:main:null Checking Out Logcat
+    entry = parse_line("1458509931396 fire:main:null Checking Out Logcat")
+    validate_entry(entry)
+    entry = parse_line("1458510880821 set:main:20 Testing Parse Entries\n")
+    validate_entry(entry)
+    #TODO: Test for None if user decides to skip
+    print("... parsing lines passed!")
+
+
+def test_parse_file():
+    with open('test_parse.log',"r") as testfile:
+        result = parse_file(testfile)
+        # forgot an _ in fn name
+        for entry in result:
+            assert int(entry[0]) > 0
+            try:
+                int(entry[2])
+            except ValueError:
+                assert entry[2] == "null"
+    print "... parsing file passed!"
+    # forgot how to try/catch python
+
+    #TODO: assert these things match
 
 def test_get_input():
     #TODO: make get_input noquittable
@@ -119,6 +172,9 @@ def test():
     #TODO: put back test_get_input()
     test_save_data()
     test_format_entry()
+    test_parse_line()
+    test_parse_file()
+    # left a : on when I copied a def to get the fn name
 #----------------------------------------------
 #                    RUN
 #----------------------------------------------
