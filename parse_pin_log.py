@@ -1,8 +1,6 @@
 import re
 import datetime
 
-# going the fuck over time
-# confused by a syntax error
 
 """
 # wishlist
@@ -48,55 +46,58 @@ def make_readable(logname, savename):
                 "overwrite, or append."
 
 """
-if __name__ == "__main__":
-    pass
-# couldn't remember how to check for main instance in python
+def get_input(prompt, verification_fn=lambda x: True, return_fn=lambda x: x):
+    user_reply = raw_input("Pin Parse: %s $ " % prompt)
+    if user_reply.lower() in ("qq", "q", "quit"):
+        return None
+#TODO: count tries and vary it up a bit
+    while not verification_fn(user_reply):
+        user_reply = raw_input("  Try Again (q to quit): $ ")
+        if user_reply.lower() in ("qq", "q", "quit"):
+            return None
+    return return_fn(user_reply)
 
-with open('pin_timers.log','r') as log:
-    lines = "".join(log.readlines())
-        # can't remeber
-       # can't remember how to parse a string format 
-        # .*? : the ? makes it nongreedy
+
+
+"""
     parseall = re.findall("(\d+) (\S+):main:(\S+) (.*?)[$\n]", lines)
-    timers_info = re.findall("(\d+) set:main:(\S+) (?P<mainlabel>.*?)[\n](?:(?:(?:.*?[\n])*?)(?:(\d+) ack:main:null (?P=mainlabel)[\n]))|(?:\d+ fire:bother:null Bother Countdown\n(\d+) ack:bother:null)|(?:(?=(\d+) set:main))",
-            lines)
-    print timers_info[0]
-    print "..."
-    print timers_info[-1]
-    testtimers(parseall, timers_info)
     import json
     with open('pin_interpreted.log','w') as savefile:
         json.dump(parse_matches(timers_info), savefile)
-        # forgot whether json.dump was (data, file) or (file, data)..
+
+"""
+
+#----------------------------------------------
+#                  TESTS
+#----------------------------------------------
+def check_boolean(string):
+    if string.lower() in ("true", "t","yes","y"):
+        return True
+    elif string.lower() in ("false", "f","no","n"):
+        return False
+    else:
+        raise ValueError("%s not boolean" % string)
+
+def test():
+    #TODO: make get_input noquittable
+    user_input = get_input("type anything")
+    print "... pass!"
+    user_input = get_input("Say Okay", lambda x: (x.lower() == "okay"))
+    assert user_input in ("okay","Okay", None)
+    print "... pass!"
+    user_input = get_input("Say Banana", lambda x: (x.lower() == "banana"), lambda x: x.lower())
+    assert user_input in ("banana", None)
+    print "... pass!"
+    user_input = get_input("Say True or False",lambda x: (x.lower() in ("true","false")), check_boolean)
+    assert user_input in (True, False, None)
+    print "... pass!"
 
 
-def testtimers(all_parsed, matched_timers):
-    mindex = 0
-    for (timestamp, actiontype, timeset, label) in all_parsed:
-        if actiontype == "set":
-            for i, (m_timestamp, m_timeset, m_label, m_endstamp) in enumerate(matched_timers[mindex:]):
-                if m_timestamp == timestamp and label == m_label and timeset == m_timeset:
-                    mindex += i
-                    break
-                if int(m_timestamp) > int(timestamp):
-                    raise ValueError("Did not find end for %s: %s" % (timestamp, label))
-                # forgot how to raise errors in python
+#----------------------------------------------
+#                    RUN
+#----------------------------------------------
 
 
-def parse_matches(matches):
-    results = []
-    for timestamp, timeset, label, endstamp in matches:
-        start_date = datetime.datetime.fromtimestamp(int(timestamp) / 1000.0)
-        timeset = int(timeset)
-        duration = (start_date - datetime.datetime.fromtimestamp(int(endstamp)/1000.0)).total_seconds() / 60
-        if abs(duration - timeset) >= (timeset * 0.10) and duration < 30:
-            # abs() is not a math function, but built-in
-            duration = timeset
-        results.append(
-                {"time":start_date.ctime(),
-                "label":label,
-                "set_time":timeset,
-                "duration":duration}
-                )
-
-
+if __name__ == "__main__":
+    """main loop"""
+    test()
