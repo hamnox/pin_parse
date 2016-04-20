@@ -1,0 +1,4 @@
+*.log
+archives/
+test_*.log
+.idea/
